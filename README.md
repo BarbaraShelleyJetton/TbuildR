@@ -10,7 +10,7 @@ The goal of TbuildR is to aid in the creation of phylogenetic trees.
 You can install the development version of TbuildR from [GitHub](https://github.com/) with:
 
 ``` r
-# install.packages("pak")
-pak::pak("BarbaraShelleyJetton/TbuildR")
+# install.packages("devtools") # if not installed
+devtools::install_github("BarbaraShelleyJetton/TbuildR")
 ```
 
