@@ -1,11 +1,35 @@
-library(readr)
-library(Biostrings)
-library(DECIPHER)
-library(rentrez)
-library(microseq)
-library(parallel)
-library(stringr)
-
+#' SeqSmash
+#'
+#' Aligns genes to reference genome and creates consensus sequence per species.
+#'
+#' @param species_list csv file containing a "species" column
+#' @param fasta_file FASTA files with gene sequences to be aligned
+#' @param reference_file FASTA file of reference genome
+#' @param output_file output file path / name for FASTA
+#' @param replace_gaps Logical. whether to replace "-" gaps with custom symbol
+#' @param gap_symbol replacement character for gaps ("?" or "N")
+#'
+#' @return FASTA
+#'
+#' @importFrom readr read_csv
+#' @importFrom Biostrings readDNAStringSet DNAStringSet BStringSet
+#' @importFrom DECIPHER AlignSeqs ConsensusSequence
+#' @importFrom parallel detectCores
+#' @importFrom stringr str_to_title
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' SeqSmash(
+#' species_list = "./path.csv",
+#' fasta_file = "./path.fasta",
+#' reference_file = "./path.fasta",
+#' outputfile = "./path.fasta",
+#' replace_gaps = TRUE,
+#' gap_symbol = "?"
+#' )
+#' }
 
 SeqSmash <- function(species_list, fasta_file, reference_file, output_file, replace_gaps = FALSE, gap_symbol = "?") {
 
@@ -63,7 +87,7 @@ SeqSmash <- function(species_list, fasta_file, reference_file, output_file, repl
   all_seqs_filtered <- all_seqs[!sapply(all_seqs, function(x) all(sapply(x, is.null)))]
 
   # Read the reference genome
-  ref_mito <- readDNAStringSet(ref_mito_file)
+  ref_mito <- readDNAStringSet(reference_file)
 
   # Temporary file for consensus sequences
   temp_fasta <- tempfile(fileext = ".fasta")
@@ -93,7 +117,7 @@ SeqSmash <- function(species_list, fasta_file, reference_file, output_file, repl
     if (replace_gaps) {
       cons_seq_mod <- gsub("-", gap_symbol, as.character(bstring))
     } else {
-      cons_seq_mod <- as.character(bstring)  # Keep original sequence
+      cons_seq_mod <- as.character(bstring)
     }
 
     line <- paste0(">", species_name, "\n", cons_seq_mod, "\n")

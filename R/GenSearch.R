@@ -1,8 +1,33 @@
-library(readr)
-library(Biostrings)
-library(DECIPHER)
-library(rentrez)
-library(microseq)
+#' GenSearch
+#'
+#' Searches GenBank for nucleotide sequences based on a list of species and genes, applies optional
+#' length filtered, and writes resulting sequences to a FASTA file.
+#'
+#' @param species_list csv file containing a "species" column
+#' @param gene_list  csv file containing "gene" column character vector of genes to search
+#' @param output_file output file path / name for FASTA
+#' @param retmax_value max number of sequences pulled per query
+#' @param desired_length max length of sequence
+#' @param search_field GenBank field to search (e.g., "GENE", "ALL")
+#'
+#' @return FASTA
+#'
+#' @importFrom readr read_csv
+#' @importFrom rentrez entrez_search entrez_summary entrez_fetch
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' GenSearch(
+#' species_list = "./path.csv",
+#' gene_list = "./path.csv",
+#' output = "./path.fasta",
+#' retmax = 10,
+#' length = 18000,
+#' search = "GENE"
+#' )
+#' }
 
 GenSearch <- function(species_list, gene_list, output_file, retmax_value = 10, desired_length = 18000, search_field = "GENE") {
 
@@ -24,7 +49,7 @@ GenSearch <- function(species_list, gene_list, output_file, retmax_value = 10, d
     stop("gene_list must be either a character vector or a CSV file containing a 'gene' column.")
   }
 
-  # Generate and perform search on GenBank
+  # generate and perform the GenBank search
   generate_and_perform_search <- function(species_list, gene_list, retmax_value) {
     search_results <- list()
     for (species in species_list$species) {
@@ -42,7 +67,7 @@ GenSearch <- function(species_list, gene_list, output_file, retmax_value = 10, d
     return(search_results)
   }
 
-  # Get Summaries
+  #get summaries
   get_summaries <- function(search_results) {
     cat("Pulling summaries...\n")
     summaries <- list()
@@ -68,7 +93,7 @@ GenSearch <- function(species_list, gene_list, output_file, retmax_value = 10, d
     return(summaries)
   }
 
-  # Filter accessions
+  #filter accessions
   get_filtered_accessions <- function(species_summaries, gene_list, desired_length) {
     filtered_accessions <- list()
     for (key in names(species_summaries)) {
@@ -98,7 +123,7 @@ GenSearch <- function(species_list, gene_list, output_file, retmax_value = 10, d
     return(filtered_accessions)
   }
 
-  # Fetch and write Fasta file
+  #fetch and write FASTA
   get_fasta <- function(accession_numbers, output_file) {
     cat("Writing to file...\n")
     all_recs <- character()
@@ -111,7 +136,7 @@ GenSearch <- function(species_list, gene_list, output_file, retmax_value = 10, d
     writeLines(all_recs, con = output_file)
   }
 
-  # Execute
+  # Execute the steps
   search_results <- generate_and_perform_search(species_list, gene_list, retmax_value)
   species_summaries <- get_summaries(search_results)
   filtered_accessions <- get_filtered_accessions(species_summaries, gene_list, desired_length)
